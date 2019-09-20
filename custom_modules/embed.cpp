@@ -108,6 +108,7 @@ void create_cell_types( void )
 
 	// set the default cell type to no phenotype updates 
 	// cell_defaults.functions.update_phenotype = tumor_cell_phenotype_with_oncoprotein; 
+	cell_defaults.functions.update_phenotype = switch_celltype_check; 
 
 	// not motile 
 	cell_defaults.phenotype.motility.is_motile = false; 
@@ -177,6 +178,22 @@ void setup_tissue( void )
 	}
 }
 
+void switch_celltype_check( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	// std::cout << __FUNCTION__ << "------- " << std::endl;
+	float t_thresh = 120.0;
+	if ((PhysiCell_globals.current_time > t_thresh)&&(PhysiCell_globals.current_time < t_thresh+0.1))
+	{
+		if (pCell->type == 0)
+		{
+			std::cout << __FUNCTION__ << "------- switch cell type: time=" << PhysiCell_globals.current_time << std::endl;
+			// void Cell::convert_to_cell_definition( Cell_Definition& cd )
+			pCell->convert_to_cell_definition(env_cell);
+			pCell->type = 1;
+		}
+	}
+	return; 
+}
 	
 // custom cell phenotype function to scale immunostimulatory factor with hypoxia 
 void tumor_cell_phenotype_with_oncoprotein( Cell* pCell, Phenotype& phenotype, double dt )

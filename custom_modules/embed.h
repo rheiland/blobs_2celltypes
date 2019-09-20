@@ -83,4 +83,5 @@ void setup_tissue();
 // set up the microenvironment to include the immunostimulatory factor 
 void setup_microenvironment( void );  // done 
 
+void switch_celltype_check( Cell* pCell, Phenotype& phenotype, double dt );
 std::vector<std::string> my_coloring_function( Cell* );
