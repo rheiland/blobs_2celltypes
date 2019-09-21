@@ -108,21 +108,12 @@ void create_cell_types( void )
 
 	// set the default cell type to no phenotype updates 
 	// cell_defaults.functions.update_phenotype = tumor_cell_phenotype_with_oncoprotein; 
-	
-	int apoptosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Apoptosis" );
-	int necrosis_model_index = cell_defaults.phenotype.death.find_death_model_index( "Necrosis" );
-	cell_defaults.phenotype.death.rates[ apoptosis_model_index ] = 0.0; 
-	cell_defaults.phenotype.death.rates[ necrosis_model_index ] = 0.0; 
-	
+	cell_defaults.functions.update_phenotype = switch_celltype_check; 
 
 	// not motile 
-	cell_defaults.phenotype.motility.is_motile = true;
-    cell_defaults.phenotype.motility.persistence_time = 4;
-	cell_defaults.phenotype.motility.migration_speed = 0.25; 
-	cell_defaults.phenotype.motility.migration_bias = 0.0;   // completely random
-	
+	cell_defaults.phenotype.motility.is_motile = false; 
 
-	cell_defaults.phenotype.mechanics.cell_cell_adhesion_strength = 1.0;
+	cell_defaults.phenotype.mechanics.cell_cell_adhesion_strength = 0.0;
 	cell_defaults.phenotype.mechanics.cell_cell_repulsion_strength = 5.0;
 
 	// add custom data 
@@ -133,26 +124,18 @@ void create_cell_types( void )
 	//-------  cell type 0 ------------
 	embed_cell = cell_defaults;
 	embed_cell.name = "embed cell"; 
-	embed_cell.type = 0;
-	embed_cell.phenotype.motility.migration_speed = 0.05;
-	embed_cell.phenotype.mechanics.cell_cell_adhesion_strength = 1.0;
-	embed_cell.phenotype.mechanics.cell_cell_repulsion_strength = 5.0;	
+	embed_cell.type = 0; 
 	embed_cell.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.0; 
-	embed_cell.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.01;
-	
+	embed_cell.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.01; 
 	
 	//-------  cell type 1 ------------
 	env_cell = cell_defaults;
 	env_cell.name = "envelop cell"; 
-	env_cell.type = 1;
-	env_cell.phenotype.mechanics.cell_cell_adhesion_strength = 1.0;
-	env_cell.phenotype.mechanics.cell_cell_repulsion_strength = 5.0;
+	env_cell.type = 1; 
 	env_cell.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.0; 
 	
 	return; 
 }
-
-
 
 void setup_microenvironment( void )
 {
@@ -169,8 +152,6 @@ void setup_microenvironment( void )
 	return; 
 }	
 
-
-// --- PUT CELLS IN POSITION
 void setup_tissue( void )
 {
 	double x,y,z;
@@ -179,12 +160,11 @@ void setup_tissue( void )
 	Cell* pC;
 	
 	// std::string cell_file = parameters.strings( "cell_file" ); 
-	std::string cell_file = "cellM.dat"; 
+	std::string cell_file = "cells1552.dat"; 
 	std::cout << "-------- reading " << cell_file << std::endl;
 
 	std::ifstream infile(cell_file);
 	// while ((infile >> x >> sep >> y >> sep >> z >> sep >> cell_type ) && (sep == ' '))
-	double scale_factor = parameters.doubles( "scale_factor" ); 
 	while (infile >> x >> y >> z >> cell_type ) 
 	{
 //		std::cout << "cell type " << cell_type <<":  x,y= "<< x << "," << y ;
@@ -194,10 +174,26 @@ void setup_tissue( void )
 		else
 			pC = create_cell(env_cell); 
 
-		pC->assign_position( x*scale_factor, y*scale_factor, 0.0 );
+		pC->assign_position( x,y, 0.0 );
 	}
 }
 
+void switch_celltype_check( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	// std::cout << __FUNCTION__ << "------- " << std::endl;
+	float t_thresh = 120.0;
+	if ((PhysiCell_globals.current_time > t_thresh)&&(PhysiCell_globals.current_time < t_thresh+0.1))
+	{
+		if (pCell->type == 0)
+		{
+			std::cout << __FUNCTION__ << "------- switch cell type: time=" << PhysiCell_globals.current_time << std::endl;
+			// void Cell::convert_to_cell_definition( Cell_Definition& cd )
+			pCell->convert_to_cell_definition(env_cell);
+			// pCell->type = 1;
+		}
+	}
+	return; 
+}
 	
 // custom cell phenotype function to scale immunostimulatory factor with hypoxia 
 void tumor_cell_phenotype_with_oncoprotein( Cell* pCell, Phenotype& phenotype, double dt )
@@ -222,7 +218,6 @@ void tumor_cell_phenotype_with_oncoprotein( Cell* pCell, Phenotype& phenotype, d
 	return; 
 }
 
-// --- COLOURING FUNCTION
 std::vector<std::string> my_coloring_function( Cell* pCell )
 {
 	std::vector<std::string> output = { "green" , "black" , "cyan", "black" }; 

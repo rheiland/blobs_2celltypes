@@ -333,7 +333,7 @@ def plot_svg():
 #  circles(xvals,yvals, s=rvals, c=rgbs, alpha=1.0, edgecolor='black')
 #  circles(xvals,yvals, s=rvals)
 #  circles(xvals,yvals, s=rvals, c=rgbs)
-  circles(xvals,yvals, s=rvals, color=rgbs)
+  circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black')
 #plt.xlim(0,2000)  # TODO - get these values from width,height in .svg at top
 #plt.ylim(0,2000)
   plt.pause(time_delay)

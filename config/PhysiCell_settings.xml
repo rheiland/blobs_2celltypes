@@ -128,6 +128,7 @@
 	
 	<user_parameters>
 		<random_seed type="int" units="dimensionless">0</random_seed>
+		<scale_factor type="double">300.</scale_factor>
 	</user_parameters>
 	
 </PhysiCell_settings>
